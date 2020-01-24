@@ -86,23 +86,14 @@ class CrawlerController{
 
 	public function observatory($model,$request,$body){
 		$model_generic = new Model();
-		$links = $model->robots();
+		$links = $model->observatory();
 		// print_r($links);
-		$valid_date = $model->valid_date_observatory($links[0]['id']);
 		foreach($links as $link){
-			// if(is_null($valid_date)){
-				$url = str_replace('//robots.txt', '/robots.txt', $link['url'].'/robots.txt');
-				$robots = curl_proxy($url);
-				$robots_old = $model->robots_old($link['id'])[0]['rules'];
-				$dados['datetime'] = "'".date('Y-m-d H:i:s')."'";
-				$dados['url_id'] = $link['id'];
-				$dados['url'] = "'".$link['url']."'";
-				$dados['status'] = "'".$http_response_header[0]."'";
-				$dados['rules'] = "'".$robots."'";
-				$dados['difference'] = ( $robots <> $robots_old ? 'True' : 'False' );
-				$result = $model_generic->insert('robots',$dados);
-				echo ($result == false ? "Link $url não atualizado!</br>" : "Link $url atualizado!</br>");
-			// }				
+			$valid_date = $model->valid_date_observatory($links[0]['id']);
+			if(is_null($valid_date)){
+				$api = json_decode(file_get_contents('http://localhost/simplex/observatory.php?page='.$link['url']),true);
+				
+			}				
 		}
 	}
 
@@ -110,9 +101,9 @@ class CrawlerController{
 		$model_generic = new Model();
 		$links = $model->robots();
 		// print_r($links);
-		$valid_date = $model->valid_date_robots($links[0]['id']);
 		foreach($links as $link){
-			// if(is_null($valid_date)){
+			$valid_date = $model->valid_date_robots($link['id']);
+			if(is_null($valid_date)){
 				$url = str_replace('//robots.txt', '/robots.txt', $link['url'].'/robots.txt');
 				$robots = curl_proxy($url);
 				$robots_old = $model->robots_old($link['id'])[0]['rules'];
@@ -124,7 +115,7 @@ class CrawlerController{
 				$dados['difference'] = ( $robots <> $robots_old ? 'True' : 'False' );
 				$result = $model_generic->insert('robots',$dados);
 				echo ($result == false ? "Link $url não atualizado!</br>" : "Link $url atualizado!</br>");
-			// }				
+			}				
 		}
 	}
 
@@ -136,12 +127,19 @@ class CrawlerController{
 			$valid_date = $model->valid_date_seo_crawler($link['id']);
 			if($valid_date<1){
 				$traffic_types = ['Desktop Not Rendered','Desktop Javascript Rendered', 'Mobile Not Rendered','Mobile Javascript Rendered'];
+				$agents = [
+					'Desktop Not Rendered'=>'Googlebot/2.1 (+http://www.google.com/bot.html)',
+					'Desktop Javascript Rendered'=>'Googlebot/2.1 (+http://www.google.com/bot.html)',
+					'Mobile Not Rendered'=>'Mozilla/5.0 (Linux; Android 7.0; SM-G930V Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.125 Mobile Safari/537.36',
+					'Mobile Javascript Rendered'=>'Mozilla/5.0 (Linux; Android 7.0; SM-G930V Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.125 Mobile Safari/537.36',
+				];
 					foreach($traffic_types as $traffic_type){
 						// if(iniCache("seocrawler.htm")){
 						// 	echo "arquivo criado";
 						// }endCache(true);
 						$url = $link['url'];
-						$html = crawlerPage($link['url']);
+						$html = crawlerPage($link['url'],$agents[$traffic_type]);
+						if(strpos($traffic_type, 'Rendered')!==false){ $html = html_entity_decode($html);}
 						$head = pesquisar($html,'<head>','</head>',false);
 						$headers_f = explode('<meta',$head);
 						$headers = array();
@@ -156,20 +154,20 @@ class CrawlerController{
 						$dados['datetime'] = "'".date('Y-m-d H:i:s')."'";
 						$dados['url_id'] = $link['id'];
 						$dados['url'] = stringify_sql($link['url'],255);
-						$dados['type'] = stringify_sql($traffic_type."'";
-						$dados['headers'] = stringify_sql(json_encode($headers)."'";
+						$dados['type'] = stringify_sql($traffic_type,255);
+						$dados['headers'] = stringify_sql(json_encode($headers),255);
 						$dados['html'] = stringify_sql(
 								json_encode(
 									insert_mongo($manager,'hibots01.html_reference',['font'=>'seo_crawler','html'=>$html,'traffic_type'=>$traffic_type,'url'=>$dados['url'],'url_id'=>$dados['url_id'],'created'=>date('Y-m-d h:m:s'),'updated'=>date('Y-m-d h:m:s')])
 								)
 								,255);
 						$dados['nhtml'] = strlen($html);
-						$dados['nh1'] = substr_count($html,'h1'),255);
-						$dados['nh2'] = substr_count($html,'h2'),255);
-						$dados['nh3'] = substr_count($html,'h3'),255);
-						$dados['nh4'] = substr_count($html,'h4'),255);
-						$dados['nh5'] = substr_count($html,'h5'),255);
-						$dados['nh6'] = substr_count($html,'h6'),255);
+						$dados['nh1'] = stable(substr_count($html,'h1'),255),$seo_old['nh1'],1.1);
+						$dados['nh2'] = stable(substr_count($html,'h2'),255),$seo_old['nh2'],1.1);
+						$dados['nh3'] = stable(substr_count($html,'h3'),255),$seo_old['nh3'],1.1);
+						$dados['nh4'] = stable(substr_count($html,'h4'),255),$seo_old['nh4'],1.1);
+						$dados['nh5'] = stable(substr_count($html,'h5'),255),$seo_old['nh5'],1.1);
+						$dados['nh6'] = stable(substr_count($html,'h6'),255),$seo_old['nh6'],1.1);
 						$dados['h1'] = stringify_sql(json_encode(get_tags($html,'h1')),255);
 						$dados['h2'] = stringify_sql(json_encode(get_tags($html,'h2')),255);
 						$dados['h3'] = stringify_sql(json_encode(get_tags($html,'h3')),255);
@@ -184,9 +182,9 @@ class CrawlerController{
 						$dados['description'] = stringify_sql($headers['description'],255);
 						$dados['robots'] = stringify_sql($headers['robots'],255);
 						$dados['nlinks'] = substr_count($html,'href');
-						$dados['nimgs'] = substr_count($html,'<img');
-						$dados['nimgsalt'] = substr_count($html,'img alt');
-						$dados['njavascript'] = substr_count($html,'<script');
+						$dados['nimgs'] = substr_count($html,'img');
+						$dados['nimgsalt'] = substr_count($html,'img');
+						$dados['njavascript'] = substr_count($html,'script');
 						$dados['ncss'] = substr_count($html,'<link')+substr_count($html,'<style');
 						$changes = array_diff($dados,$seo_old);
 						$dados['changes'] = "'".json_encode(array_keys($changes)),255);

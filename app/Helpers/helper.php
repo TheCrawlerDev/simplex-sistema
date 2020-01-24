@@ -350,4 +350,45 @@
 		else return null;
 	}
 
+	function stable($va1,$val2,$percent){
+		if(($val1)>($val2*$percent)) return $val1;
+		return $val2;
+	}
+
+	// function renderHtml(function()
+ //    {
+ //        renderHead(function()
+ //        {
+ //            renderTitle('Welcome to my new site!');
+ //        });
+ //        renderBody(function()
+ //        {
+ //            renderH1('Under Construction');
+ //            renderImg('http://www.mysite.com/images/logo.png', 'My Site Ltd.');
+ //            renderP(function()
+ //            {
+ //                echo htmlspecialchars('This site is still being constructed...');
+ //                renderBr();
+ //                renderA('http://www.mysite.com/', '', function()
+ //                {
+ //                    echo htmlspecialchars('> Visit My Site's official website!');
+ //                });
+ //                renderA('http://www.some-other-site.com/', '_blank', function()
+ //                {
+ //                    echo htmlspecialchars('> Get more information here.');
+ //                });
+ //            });
+
+ //            // load and render some text dynamically
+ //            $textItems = loadTextItems();
+ //            foreach ($textItems as $item)
+ //            {
+ //                renderP(function() use ($item)
+ //                {
+ //                    echo htmlspecialchars($item);
+ //                });
+ //            });
+ //        });
+ //    });
+	// }
 ?>
