@@ -97,13 +97,12 @@
     //  echo $resp;
         $respA = json_decode($resp, true);
 
-
+        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+		$header = substr($response, 0, $header_size);
+		$body = substr($response, $header_size);
         curl_close($ch);
-        $TEMPOCARREGAMENTO = $TEMPOCARREGAMENTO + microtime(true) - $ini;
-        $NUMEROCARREGAMENTO++;
-        file_put_contents("url.txt", date('c') . " $url " . (@count($respA)) . " " . (@count(current($respA))) . "\r\n", FILE_APPEND);
         //file_put_contents('log.txt', date('c')."$url\t$resp\r\n",FILE_APPEND);
-        return $respA;
+        return ['content'=>$respA,'header_size'=>$header_size,'header'=>$header,'body'=>$body];
     }
 
 	function sendJson($json,$url,$useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36',$timeout = 12000){
@@ -159,7 +158,15 @@
 		curl_setopt($ch, CURLOPT_REFERER, $url);
 		// $retorno = curl_exec($ch);
 		// $this->returnPage = $retorno;
-		return curl_exec($ch);
+		$response = curl_exec($ch);
+		$header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+		$content_type = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		$header = substr($response, 0, $header_size);
+		$body = substr($response, $header_size);
+		$info = curl_getinfo($ch);
+		curl_close($ch);
+        return ['content'=>$response,'header_size'=>$header_size,'header'=>$header,'body'=>$body,'content_type'=>$content_type,'info'=>$info];
 	}
 	function sitemap($urls,$explode,$after,$before){
 		$retorno = '';		
@@ -346,15 +353,20 @@
 	}
 	function stringify_sql($string){
 		$str = str_replace(['[',']'], '', $string);
-		if(strlen($str))	return "'".$string."'";
-		else return null;
+		if(strlen($str)>0)	return "'".$string."'";
+		else return "'".null."'";
 	}
 
 	function stable($va1,$val2,$percent){
 		if(($val1)>($val2*$percent)) return $val1;
 		return $val2;
 	}
-
+	function renderHTML(){
+		$dom = new DOMDocument();
+		$dom->validateOnParse = true;
+		@$dom->loadHTML($file_url);
+		return $dom->getElementById("txt")->nodeValue;
+	}
 	// function renderHtml(function()
  //    {
  //        renderHead(function()
