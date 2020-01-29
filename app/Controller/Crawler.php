@@ -10,20 +10,25 @@ class CrawlerController{
 			$valid_date = $model->valid_date_alexa($link['id']);
 			var_dump($valid_date);
 			if(is_null($valid_date)){
-				$api = json_decode(file_get_contents('http://localhost/simplex/alexa.php?page='.$link['url']),true);
-				$dados['date'] = stringify_sql(date('Y-m-d H:i:s'));
-				$dados['url_id'] = $link['id'];
-				$dados['url'] = stringify_sql($link['url']);
-				$dados['global_rank'] = end($api['rankData']['3mrank']);
-				$dados['country_rank'] = $api['country_rank'];
-				$dados['bounce_rate'] = $api['bounce_rating'];
-				$dados['page_p_visit'] = $api['visitorPercentage'][0]['pageviews_per_user'];
-				$dados['time_on_site'] = $api['time_on_site'];
-				$dados['search_visits'] = $api['visitorPercentage'][0]['visitors_percent'];
-				$dados['how_fast'] = 0;
-				$result = $model_generic->insert('alexa',$dados);
-				$url = $link['url'];
-				echo ($result == false ? "Link $url não atualizado!</br>" : "Link $url atualizado!</br>");
+				try{
+					$api = json_decode(file_get_contents('http://hibots.com.br/simplex/alexa.php?page='.$link['url']),true);
+					$dados['date'] = stringify_sql(date('Y-m-d H:00:00'));
+					$dados['url_id'] = $link['id'];
+					$dados['url'] = stringify_sql($link['url']);
+					$dados['global_rank'] = end($api['rankData']['3mrank']);
+					$dados['country_rank'] = str_replace(',', '', $api['country_rank']);
+					$dados['bounce_rate'] = $api['bounce_rating'];
+					$dados['page_p_visit'] = $api['visitorPercentage'][0]['pageviews_per_user'];
+					$dados['time_on_site'] = $api['time_on_site'];
+					$dados['search_visits'] = $api['visitorPercentage'][0]['visitors_percent'];
+					$dados['how_fast'] = 0;
+					print_r($dados);
+					$result = $model_generic->insert('alexa',$dados);
+					$url = $link['url'];
+					echo ($result == false ? "Link $url não atualizado!</br>" : "Link $url atualizado!</br>");
+				}catch(Exception $e){
+					print_r($e);
+				}
 			}			
 		}
 	}
@@ -34,14 +39,14 @@ class CrawlerController{
 		$link = $model->lighthouse();
 		$url = $link['url'];
 		print_r($link);
-		echo shell_exec("lighthouse $url --output json --output-path ./lighthouse-sites/report.json");
+		echo shell_exec("lighthouse $url --output json --output-path ./report.json");
 		echo "Coleta dados Lighthouse para o site $url";
 		$valid_date = $model->valid_date_lighthouse($link['id']);
-		$api = json_decode(file_get_contents('http://localhost/simplex/lighthouse-sites/report.json'),true);
+		$api = json_decode(file_get_contents('http://simplexteste.kinghost.net/report.json'),true);
 		// reformatar valor para as opções do audit_type
 		foreach($api['audits'] as $audit){
 			if(intval($audit['score']) > 0){
-				$dados['datetime'] = stringify_sql(date('Y-m-d H:i:s'));
+				$dados['datetime'] = stringify_sql(date('Y-m-d H:00:00'));
 				$dados['url_id'] = $link['id'];
 				$dados['url'] = stringify_sql($link['url']);
 				$dados['audit_type'] = stringify_sql($audit['id']);
@@ -67,7 +72,7 @@ class CrawlerController{
 			if(is_null($valid_date)){
 				foreach(array_keys($agents) as $agent){
 					$api = json_decode(crawlerPage('https://www.googleapis.com/pagespeedonline/v4/runPagespeed?locale=br&key=AIzaSyBMVp4oV3YwloLqW_K4sdm02rcDOJhE2Aw&url='.$link['url'],$agents[$agent]),true);
-					$dados['date'] = stringify_sql(date('Y-m-d H:i:s'));
+					$dados['date'] = stringify_sql(date('Y-m-d H:00:00'));
 					$dados['url_id'] = $link['id'];
 					$dados['url'] = stringify_sql($link['url']);
 					$dados['device'] = $agent;
@@ -92,33 +97,37 @@ class CrawlerController{
 		}
 	}
 
-	// script em teste
+	// script @ok
 	public function observatory($model,$request,$body){
 		$model_generic = new Model();
 		$links = $model->observatory();
-		// print_r($links);
 		foreach($links as $link){
 			$valid_date = $model->valid_date_observatory($links[0]['id']);
-			if(is_null($valid_date)){
-				$api = json_decode(file_get_contents('http://localhost/simplex/observatory.php?page='.$link['url']),true);
-				$dados['datetime'] = stringify_sql(date('Y-m-d H:i:s'));
-				$dados['url_id'] = $link['id'];
-				$dados['url'] = stringify_sql($link['url']);
-				$dados['score'] = stringify_sql(get_score($api,'score'));
-				$dados['content_security_policy'] = stringify_sql(get_score($api,'content_security_policy'));
-				$dados['contribute'] = stringify_sql(get_score($api,'contribute'));
-				$dados['cookies'] = stringify_sql(get_score($api,'cookies'));
-				$dados['cross_origin_resource_sharing'] = stringify_sql(get_score($api,'cross_origin_resource_sharing'));
-				$dados['public_key_pinning'] = stringify_sql(get_score($api,'public_key_pinning'));
-				$dados['redirection'] = stringify_sql(get_score($api,'redirection'));
-				$dados['referrer_policy'] = stringify_sql(get_score($api,'referrer_policy'));
-				$dados['strict_transport_security'] = stringify_sql(get_score($api,'strict_transport_security'));
-				$dados['subresource_integrity'] = stringify_sql(get_score($api,'subresource_integrity'));
-				$dados['x_content_type_options'] = stringify_sql(get_score($api,'x_content_type_options'));
-				$dados['public_key_pinning'] = stringify_sql(get_score($api,'public_key_pinning'));
-				$result = $model_generic->insert('observatory',$dados);
-				echo ($result == false ? "Link $url não atualizado!</br>" : "Link $url atualizado!</br>");	
-			}				
+			// if(is_null($valid_date)){
+				$api = json_decode(file_get_contents('https://hibots.com.br/simplex/observatory.php?page='.$link['url']),true);
+				// print_r($api);
+				// if(isset($api['r5'])){
+					$dados['datetime'] = stringify_sql(date('Y-m-d H:00:00'));
+					$dados['url_id'] = $link['id'];
+					$dados['url'] = stringify_sql($link['url']);
+					$dados['score'] = intval($api['r1']['score']['score_modifier']);
+					$dados['content_security_policy'] = intval($api['r5']['content-security-policy']['score_modifier']);
+					$dados['contribute'] = intval($api['r5']['contribute']['score_modifier']);
+					$dados['cookies'] = intval($api['r5']['cookies']['score-modifier']);
+					$dados['cross_origin_resource_sharing'] = intval($api['r5']['cross-origin-resource-sharing']['score_modifier']);
+					$dados['public_key_pinning'] = intval($api['r5']['public-key-pinning']['score_modifier']);
+					$dados['redirection'] = intval($api['r5']['redirection']['score_modifier']);
+					$dados['referrer_policy'] = intval($api['r5']['referrer-policy']['score_modifier']);
+					$dados['strict_transport_security'] = intval($api['r5']['strict-transport-security']['score_modifier']);
+					$dados['subresource_integrity'] = intval($api['r5']['subresource-integrity']['score_modifier']);
+					$dados['x_content_type_options'] = intval($api['r5']['x-content-type-options']['score_modifier']);
+					$dados['x_frame_options'] = intval($api['r5']['x_frame_options']['score_modifier']);
+					$dados['x_xss_protection'] = intval($api['r5']['x_xss_protection']['score_modifier']);
+					$dados['details'] = stringify_sql(json_encode($api['r5']));
+					$result = $model_generic->insert('observatory',$dados);
+					echo ($result == false ? "Link $url não atualizado!</br>" : "Link $url atualizado!</br>");	
+				// }
+			// }				
 		}
 	}
 
@@ -127,20 +136,30 @@ class CrawlerController{
 		$model_generic = new Model();
 		$links = $model->robots();
 		foreach($links as $link){
-			$valid_date = $model->valid_date_robots($link['id']);
+			$valid_date = $model->valid_date_robots($link['id'])[0]['max(datetime)'];
 			if(is_null($valid_date)){
-				$url = str_replace('//robots.txt', '/robots.txt', $link['url'].'/robots.txt');
-				$response = crawlerPage($url);
-				$robots = $response['content'];
-				$robots_old = $model->robots_old($link['id'])[0]['rules'];
-				$dados['datetime'] = stringify_sql(date('Y-m-d H:i:s'));
-				$dados['url_id'] = $link['id'];
-				$dados['url'] = stringify_sql($link['url']);
-				$dados['status'] = stringify_sql($response);
-				$dados['rules'] = stringify_sql($robots);
-				$dados['difference'] = ( $robots <> $robots_old ? 'True' : 'False' );
-				$result = $model_generic->insert('robots',$dados);
-				echo ($result == false ? "Link $url não atualizado!</br>" : "Link $url atualizado!</br>");
+				try{
+					$url = str_replace('//robots.txt', '/robots.txt', $link['url'].'/robots.txt');
+					$response = crawlerPage($url);
+					$robots = $response['content'];
+					$robots_old = $model->robots_old($link['id'])[0]['rules'];
+					$dados['datetime'] = stringify_sql(date('Y-m-d H:00:00'));
+					$dados['url_id'] = $link['id'];
+					$dados['url'] = stringify_sql($link['url']);
+					$dados['status'] = stringify_sql($response['status']);
+					$dados['rules'] = stringify_sql($robots);
+					$dados['difference'] = ( $robots <> $robots_old ? 'True' : 'False' );
+					print_r($dados);
+					$result = $model_generic->insert('robots',$dados);
+					echo ($result == false ? "Link $url não atualizado!</br>" : "Link $url atualizado!</br>");
+				}catch(Exception $e){
+					$dados['datetime'] = stringify_sql(date('Y-m-d H:00:00'));
+					$dados['url_id'] = $link['id'];
+					$dados['url'] = stringify_sql($link['url']);
+					$dados['status'] = '403';
+					$result = $model_generic->insert('robots',$dados);
+					print_r($e);
+				}
 			}				
 		}
 	}
@@ -182,7 +201,7 @@ class CrawlerController{
 							}
 						}
 						$seo_old = $model->seo_old($link['id'])[0]['rules'];
-						$dados['datetime'] = "'".date('Y-m-d H:i:s')."'";
+						$dados['datetime'] = "'".date('Y-m-d H:00:00')."'";
 						$dados['url_id'] = $link['id'];
 						$dados['url'] = stringify_sql($link['url'],255);
 						$dados['type'] = stringify_sql($traffic_type,255);
@@ -222,8 +241,8 @@ class CrawlerController{
 						$dados['changes'] = stringify_sql(json_encode(array_keys($changes)),255);
 						$dados['nchanges'] = count($changes);
 						print_r($dados);
-						// $result = $model_generic->insert('seo_monitoring',$dados);
-						// echo ($result == false ? "Link $url não atualizado!</br>" : "Link $url atualizado!</br>");
+						$result = $model_generic->insert('seo_monitoring',$dados);
+						echo ($result == false ? "Link $url não atualizado!</br>" : "Link $url atualizado!</br>");
 					}
 			}				
 		}

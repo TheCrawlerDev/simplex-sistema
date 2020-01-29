@@ -10,5 +10,5 @@ $routes['get']['lighthouse'] = array('set'=>'Crawler@lighthouse','params'=>'ligh
 $routes['get']['pagespeed'] = array('set'=>'Crawler@pagespeed','params'=>'pagespeed');
 $routes['get']['robots'] = array('set'=>'Crawler@robots','params'=>'robots');
 $routes['get']['seo_crawler'] = array('set'=>'Crawler@seo_crawler','params'=>'seo_crawler');
-
+$routes['get']['observatory'] = array('set'=>'Crawler@observatory','params'=>'observatory');
 ?>

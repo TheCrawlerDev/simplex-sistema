@@ -72,9 +72,6 @@
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
         }
-        if (!is_null($access_token)) {
-            $head[] = "X-Shopify-Access-Token: $access_token";
-        }
         if (!is_null($post) && is_string($post)) {
             $head[] = "Content-Type: application/json";
         }
@@ -166,7 +163,8 @@
 		$body = substr($response, $header_size);
 		$info = curl_getinfo($ch);
 		curl_close($ch);
-        return ['content'=>$response,'header_size'=>$header_size,'header'=>$header,'body'=>$body,'content_type'=>$content_type,'info'=>$info];
+		if($status<>200) return curl_proxy($url);
+        return ['content'=>$response,'header_size'=>$header_size,'header'=>$header,'body'=>$body,'content_type'=>$content_type,'info'=>$info,'status'=>$status];
 	}
 	function sitemap($urls,$explode,$after,$before){
 		$retorno = '';		
