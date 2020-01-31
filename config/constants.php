@@ -6,7 +6,7 @@ const MODEL_DIR = 'app/Model/';
 
 const VIEW_DIR = 'app/View/';
 
-const PATH = 'sistema/';
+const PATH = 'simplex/sistema/';
 
 $uri = str_replace(PATH, '', $_SERVER['REQUEST_URI']);
 

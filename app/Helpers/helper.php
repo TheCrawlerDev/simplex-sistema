@@ -61,7 +61,7 @@
 		}
 	}
 
-	function carregar($url, $post = null, $access_token = null, $action = 'POST'){
+	function carregar($url, $post = null, $access_token = null, $action = 'POST',$head = array()){
         global $TEMPOCARREGAMENTO, $NUMEROCARREGAMENTO;
 
         $ini = microtime(true);
@@ -132,11 +132,31 @@
 		print_r(curl_getinfo($ch));
 		echo "</br></br>";
 		return curl_exec($ch);
+	}
+
+	public function scrapestack($url){
+		$queryString = http_build_query([
+		  'access_key' => 'd3b1a84694cd9bcec0760ae769316abf',
+		  'url' => $url,
+		  // 'render_js' => 0,
+		]);
+
+		$ch = curl_init(sprintf('%s?%s', 'http://api.scrapestack.com/scrape', $queryString));
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+		$website_content = curl_exec($ch);
+		curl_close($ch);
+
+		return $website_content;
 	}	
 	
 	function crawlerPage($url,$useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36',$timeout = 12000){
 		// $useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36';
 		// $timeout = 12000;
+		$response = scrapestack($url);
+		if(strlen($response)>50){
+			return $response;
+		}
 		$dir = dirname(__FILE__);
 		$cookie_file = $dir . '/cookies/' . md5($_SERVER['REMOTE_ADDR']) . '.txt';
 		$ch = curl_init($url);

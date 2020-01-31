@@ -36,26 +36,75 @@ class CrawlerController{
 	// script @ok
 	public function lighthouse($model,$request,$body){
 		$model_generic = new Model();
-		$link = $model->lighthouse();
-		$url = $link['url'];
-		print_r($link);
-		echo shell_exec("lighthouse $url --output json --output-path ./report.json");
-		echo "Coleta dados Lighthouse para o site $url";
-		$valid_date = $model->valid_date_lighthouse($link['id']);
-		$api = json_decode(file_get_contents('http://simplexteste.kinghost.net/report.json'),true);
-		// reformatar valor para as opções do audit_type
-		foreach($api['audits'] as $audit){
-			if(intval($audit['score']) > 0){
-				$dados['datetime'] = stringify_sql(date('Y-m-d H:00:00'));
-				$dados['url_id'] = $link['id'];
-				$dados['url'] = stringify_sql($link['url']);
-				$dados['audit_type'] = stringify_sql($audit['id']);
-				$dados['audit'] = stringify_sql($audit['title']);
-				$dados['value'] = intval($audit['score']);
-				$result = $model_generic->insert('lighthouse',$dados);
+		// audit_type pode ser null
+		// 'Performance','score'
+		// 'SEO','score'
+		// 'Accessiblity','score'
+		$links = $model->lighthouse();
+		foreach($links as $link){
+			$valid_date = $model->valid_date_lighthouse($link['id']);
+			if(is_null($valid_date)){
+				$url = $link['url'];
+				echo "Coleta dados Lighthouse para o site $url </br></br>";
+				$api = json_decode(file_get_contents('http://localhost/simplex/lighthouse.php?page='.$link['url']),true);
+				$perf_audits = ['first_meaningful_paint','first_interactive','consistently_interactive','speed_index_metric','estimated_input_latency','link_blocking_first_paint','script_blocking_first_paint','uses_responsive_images','offscreen_images','unminified_css','unminified_javascript','unused_css_rules','uses_optimized_images','uses_webp_images','uses_request_compression','time_to_first_byte','redirects','total_byte_weight','uses_long_cache_ttl','dom_size','critical_request_chains','user_timings','bootup_time','screenshot_thumbnails','mainthread_work_breakdown','uses_rel_preload','network_requests','font_display'];
+				foreach($api['lhrSlim'] as $audit){
+						try{
+							$dados['`datetime`'] = stringify_sql(date('Y-m-d H:00:00'));
+							$dados['`url_id`'] = $link['id'];
+							$dados['`url`'] = stringify_sql($link['url']);
+							$dados['`audit_type`'] = stringify_sql($audit['id']);
+							$dados['`audit`'] = stringify_sql($audit['title']);
+							$dados['`value`'] = $audit['score'];
+							print_r($dados);
+							$result = $model_generic->insert('lighthouse',$dados);
+							$url = $link['url'];
+							echo ($result == false ? "Link $url não atualizado!</br>" : "Link $url atualizado!</br>");
+						}catch(Exception $e){
+							print_r($e);
+						}
+				}
+				foreach($api['lhr']['audits'] as $audit){
+					if(isset($audit['score'])){
+						try{
+							$dados['`datetime`'] = stringify_sql(date('Y-m-d H:00:00'));
+							$dados['`url_id`'] = $link['id'];
+							$dados['`url`'] = stringify_sql($link['url']);
+							$dados['`audit_type`'] = stringify_sql($audit['id']);
+							$dados['`audit`'] = stringify_sql($audit['title']);
+							$dados['`value`'] = $audit['score'];
+							print_r($dados);
+							$result = $model_generic->insert('lighthouse',$dados);
+							$url = $link['url'];
+							echo ($result == false ? "Link $url não atualizado!</br>" : "Link $url atualizado!</br>");
+						}catch(Exception $e){
+							print_r($e);
+						}	
+					}
+				}
+				$performance = array();
+				$performance['`datetime`'] = stringify_sql(date('Y-m-d H:00:00'));
+				$performance['`url_id`'] = $link['id'];
+				$performance['`url`'] = stringify_sql($link['url']);
+				$performance['`score`'] = $api['lhrSlim'][0]['score'];
+				foreach($perf_audits as $perf_audit){
+					$perf_audit_name = str_replace('_', '-', $perf_audit);
+					if(isset($api['lhr']['audits'][$perf_audit_name]['numericValue'])){
+						$performance['`'.$perf_audit.'`'] = $api['lhr']['audits'][$perf_audit_name]['numericValue'];
+					}else if(in_array($perf_audit_name, ['critical-request-chains','resource-summary'])){
+						$performance['`'.$perf_audit.'`'] = explode(' ', $api['lhr']['audits'][$perf_audit_name]['displayValue'])[0];
+					}else if(in_array($perf_audit_name, ['user-timings', 'performance-budget', 'diagnostics'])){
+						if($api['lhr']['audits'][$perf_audit_name]['score']==null){
+							$performance['`'.$perf_audit.'`'] = 0;
+						}else if($api['lhr']['audits'][$perf_audit_name]['score']==true){
+							$performance['`'.$perf_audit.'`'] = 1;
+						}
+					}
+				}
+				$result = $model_generic->insert('performance',$performance);
 				$url = $link['url'];
 				echo ($result == false ? "Link $url não atualizado!</br>" : "Link $url atualizado!</br>");
-			}			
+			}
 		}
 	}
 

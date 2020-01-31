@@ -23,11 +23,11 @@ class CrawlerModel extends Model{
 	}
 
 	public function lighthouse(){
-		return $this->model->query('select * from monitoring_links mon where mon.lighthouse = 1 and mon.active = 1 limit 1;')[0];
+		return $this->model->query('select *,(SELECT max(datetime) FROM `lighthouse` al WHERE al.url_id = mon.id) as ult_date from monitoring_links mon where mon.lighthouse = 1 and mon.active = 1 order by ult_date limit 5;');
 	}
 
 	public function valid_date_lighthouse($url_id){
-		return count($this->model->query("select max(datetime) from lighthouse where (url_id) = (".$url_id.") and datetime >='".date('Y-m-d h:00:00')."';"));
+		return $this->model->query("select max(datetime) as date from lighthouse where (url_id) = (".$url_id.") and datetime >='".date('Y-m-d h:00:00')."';")[0]['date'];
 	}
 
 	public function robots(){
