@@ -1,5 +1,181 @@
 <?php
 	
+	function new_scan_observatory($url){
+		$ch = curl_init();
+
+		curl_setopt($ch, CURLOPT_URL, 'https://http-observatory.security.mozilla.org/api/v1/analyze?host='.$url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, "hidden=false&rescan=false");
+		curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
+
+		$headers = array();
+		$headers[] = 'Connection: keep-alive';
+		$headers[] = 'Pragma: no-cache';
+		$headers[] = 'Cache-Control: no-cache';
+		$headers[] = 'Accept: application/json, text/javascript, */*; q=0.01';
+		$headers[] = 'Origin: https://observatory.mozilla.org';
+		$headers[] = 'User-Agent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.97 Mobile Safari/537.36';
+		$headers[] = 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8';
+		$headers[] = 'Sec-Fetch-Site: same-site';
+		$headers[] = 'Sec-Fetch-Mode: cors';
+		$headers[] = 'Referer: https://observatory.mozilla.org/';
+		$headers[] = 'Accept-Encoding: gzip, deflate, br';
+		$headers[] = 'Accept-Language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7';
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+		$result = curl_exec($ch);
+		if (curl_errno($ch)) {
+		    return 'Error:' . curl_error($ch);
+		}
+		curl_close($ch);
+		return json_decode($result,true);
+	}
+
+	function formatarURL($replace,$url){
+		foreach($replace as $r){
+			$url = str_replace($r, '', $url);
+		}
+		// if(strpos($url, 'www')!==false){}
+		// else{ $url = 'www.'.$url;}
+		if(substr($url, -1, 1)=='/'){ return substr($url, 0, -1);}
+		return $url;
+	}
+
+	function url_path($url){
+		return parse_url($url)['host'];
+	}
+
+	function audit_type($audit){
+		$perf_audits = array('first-contentful-paint',
+               'first-meaningful-paint',
+               'speed-index',
+               'interactive',
+               'first-cpu-idle',
+               'estimated-input-latency',
+               'render-blocking-resources',
+               'uses-responsive-images',
+               'offscreen-images',
+               'unminified-css',
+               'unminified-javascript',
+               'unused-css-rules',
+               'uses-optimized-images',
+               'uses-webp-images',
+               'uses-text-compression',
+               'uses-rel-preconnect',
+               'time-to-first-byte',
+               'redirects',
+               'uses-rel-preload',
+               'efficient-animated-content',
+               'total-byte-weight',
+               'uses-long-cache-ttl',
+               'dom-size',
+               'critical-request-chains',
+               'user-timings',
+               'bootup-time',
+               'mainthread-work-breakdown',
+               'network-requests',
+               'screenshot-thumbnails',
+               'final-screenshot',
+               );
+		$access_audits = array('accesskeys',
+                 'aria-allowed-attr',
+                 'aria-d-attr',
+                 'aria-d-children',
+                 'aria-d-parent',
+                 'aria-roles',
+                 'aria-valid-attr-value',
+                 'aria-valid-attr',
+                 'audio-caption',
+                 'button-name',
+                 'bypass',
+                 'color-contrast',
+                 'definition-list',
+                 'dlitem',
+                 'document-title',
+                 'duplicate-id',
+                 'frame-title',
+                 'html-has-lang',
+                 'html-lang-valid',
+                 'image-alt',
+                 'input-image-alt',
+                 'label',
+                 'layout-table',
+                 'link-name',
+                 'list',
+                 'listitem',
+                 'meta-refresh',
+                 'meta-viewport',
+                 'object-alt',
+                 'tabindex',
+                 'td-headers-attr',
+                 'th-has-data-cells',
+                 'valid-lang',
+                 'video-caption',
+                 'video-description',
+                 'accesskeys',
+                 'logical-tab-order',
+                 'focusable-controls',
+                 'interactive-element-affordance',
+                 'managed-focus',
+                 'focus-traps',
+                 'custom-controls-labels',
+                 'custom-controls-roles',
+                 'visual-order-follows-dom',
+                 'offscreen-content-hidden',
+                 'heading-levels',
+                 'use-landmarks');
+		$best_audits = array('appcache-manifest',
+               'is-on-https',
+               'uses-http2',
+               'uses-passive-event-listeners',
+               'no-document-write',
+               'external-anchors-use-rel-noopener',
+               'geolocation-on-start',
+               'doctype',
+               'no-vulnerable-libraries',
+               'js-libraries',
+               'notification-on-start',
+               'deprecations',
+               'password-inputs-can-be-pasted-into',
+               'errors-in-console',
+               'image-aspect-ratio');
+		$seo_audits = array('viewport',
+              'document-title',
+              'meta-description',
+              'http-status-code',
+              'link-text',
+              'is-crawlable',
+              'robots-txt',
+              'hreflang',
+              'canonical',
+              'font-size',
+              'plugins',
+              'mobile-friendly',
+              'structured-data');
+		if(in_array($audit,$perf_audits)){
+        	return 'Performance';
+        }else if(in_array($audit,$access_audits)){
+        	return 'Accessibility';
+        }else if(in_array($audit,$best_audits)){
+        	return 'Best Practices';
+        }else if(in_array($audit,$seo_audits)){
+        	return 'SEO';
+        }else{
+        	return null;
+        } 
+        $audit_types = array('Performance'=>$perf_audits,'Accessibility'=>$access_audits,'Best Practices'=>$best_audits,'SEO'=>$seo_audits);
+
+	}
+
+	function search_audit($audit){
+		if(isset($audit['score'])){
+			return $audit['score'];
+		}else{
+			return 1;
+		}
+	}
+
 	function alexa($url){
 		$data = curl_proxy('https://www.alexa.com/siteinfo/'.$url);
 		try{
@@ -134,7 +310,7 @@
 		return curl_exec($ch);
 	}
 
-	public function scrapestack($url){
+	function scrapestack($url){
 		$queryString = http_build_query([
 		  'access_key' => 'd3b1a84694cd9bcec0760ae769316abf',
 		  'url' => $url,

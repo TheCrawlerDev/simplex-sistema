@@ -10,11 +10,11 @@ class Model{
 
 	public function connect(){
         $DATABASE = [
-        "servername"=>"mysql.hibots.com.br",
-        "username"=>"hibots19",
-        "password"=>"simplex123",
-        "dbname"=>"hibots19"
-    ];
+            "servername"=>"mysql.hibots.com.br",
+            "username"=>"hibots19",
+            "password"=>"simplex1234",
+            "dbname"=>"hibots19"
+         ];
 		try {
             $conn = new PDO("mysql:host=".$DATABASE["servername"].";dbname=".$DATABASE["dbname"],$DATABASE["username"],$DATABASE["password"]);
             $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
