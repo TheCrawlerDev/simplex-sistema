@@ -10,18 +10,16 @@ class CrawlerController{
 		foreach($links as $link){
 			$valid_date = $model->valid_date_alexa($link['id']);
 			var_dump($valid_date);
-			if(is_null($valid_date)==true){
-				$api = json_decode(file_get_contents('http://167.172.246.220/cerebro/api/alexa.php?page='.$link['url']),true);
+			if(is_null($valid_date)){
+				$api = json_dechttp://167.172.246.220/cerebro/ode(file_get_contents('http://localhost/simplex/sistema/api/alexa.php?page='.$link['url']),true);
 				$i = 0;
-		                while( is_null($api['rankData']) == true || count($api['rankData']['3mrank'])==0 ) {
-					sleep(5);
+				while( count($api['rankData'])==0 || intval($api['time_on_site'])==0 ) {
+					sleep(3);
 					$i++;
 					if($i>20) break;
-					$api = json_decode(file_get_contents('http://167.172.246.220/cerebro/api/alexa.php?page='.$link['url']),true);
+					$api = json_decode(file_get_contents('http://localhost/simplex/sistema/api/alexa.php?page='.$link['url']),true);
 				}
-				print_r($api);
 				try{
-					$dados['req'] = $i;
 					$dados['date'] = stringify_sql(date('Y-m-d H:00:00'));
 					$dados['url_id'] = $link['id'];
 					$dados['url'] = stringify_sql($link['url']);
@@ -57,7 +55,7 @@ class CrawlerController{
 			if(is_null($valid_date)){
 				$url = $link['url'];
 				echo "Coleta dados Lighthouse para o site $url </br></br>";
-				$api = json_decode(file_get_contents('http://167.172.246.220/cerebro/api/lighthouse.php?page='.$link['url']),true);
+				$api = json_decode(file_get_contents('http://localhost/simplex/sistema/api/lighthouse.php?page='.$link['url']),true);
 				$perf_audits = ['first-contentful-paint',
                'first-meaningful-paint',
                'speed-index',
@@ -214,8 +212,8 @@ class CrawlerController{
 			// var_dump($valid_date);
 			if(is_null($valid_date)){
 				try{
-					$api = json_decode(file_get_contents('http://167.172.246.220/cerebro/api/observatory.php?page='.$link['url']),true);
-					echo 'http://167.172.246.220/cerebro/api/observatory.php?page='.$link['url'];
+					$api = json_decode(file_get_contents('http://localhost/simplex/sistema/api/observatory.php?page='.$link['url']),true);
+					echo 'http://localhost/simplex/observatory.php?page='.$link['url'];
 					var_dump($api);					
 						$dados['datetime'] = stringify_sql(date('Y-m-d H:00:00'));
 						$dados['url_id'] = $link['id'];
@@ -255,13 +253,13 @@ class CrawlerController{
 			$valid_date = $model->valid_date_robots($link['id'])[0]['max(datetime)'];
 			if(is_null($valid_date)){
 				try{
-					$url = 'https://'.url_path($link['url']).'/robots.txt';
+					$url = url_path($link['url']).'/robots.txt';
 					$response = crawlerPage($url);
 					$robots = $response['content'];
 					$robots_old = $model->robots_old($link['id'])[0]['rules'];
 					$dados['datetime'] = stringify_sql(date('Y-m-d H:00:00'));
 					$dados['url_id'] = $link['id'];
-					$dados['url'] = stringify_sql($url);
+					$dados['url'] = stringify_sql($link['url']);
 					$dados['status'] = stringify_sql($response['status']);
 					$dados['rules'] = stringify_sql($robots);
 					$dados['difference'] = ( $robots <> $robots_old ? 'True' : 'False' );

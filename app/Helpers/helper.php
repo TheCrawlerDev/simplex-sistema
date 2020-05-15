@@ -1,5 +1,20 @@
 <?php
-	
+
+	function array_semireverse($array){
+			list($array1, $array2) = array_chunk($array, ceil(count($array) / 2));
+			$array1 = array_reverse($array1);
+			$retorno = array();
+			foreach(array_keys($array1) as $a){
+				try{
+					$retorno[] = $array1[$a];
+					$retorno[] = $array2[$a];
+				}catch(Exception $e){
+					// não faz nada
+				}
+			}
+			return $retorno;
+	}
+
 	function new_scan_observatory($url){
 		$ch = curl_init();
 
@@ -163,7 +178,7 @@
         	return 'SEO';
         }else{
         	return null;
-        } 
+        }
         $audit_types = array('Performance'=>$perf_audits,'Accessibility'=>$access_audits,'Best Practices'=>$best_audits,'SEO'=>$seo_audits);
 
 	}
@@ -214,7 +229,7 @@
 
 		return $json;
 	}
-	
+
 
 	function curl_proxy($url){
 		$username = 'lum-customer-hl_96689a01-zone-static-route_err-block';
@@ -312,8 +327,10 @@
 
 	function scrapestack($url){
 		$queryString = http_build_query([
-		  'access_key' => 'd3b1a84694cd9bcec0760ae769316abf',
-		  'url' => $url,
+		//'access_key' => 'd3b1a84694cd9bcec0760ae769316abf',
+		//'access_key'=>'de313918d57c4ba42563039281fbf772',
+		'access_key'=>'674d6e8ad1d05458b4dfe17fc5c6d3ab',
+		 'url' => $url,
 		  // 'render_js' => 0,
 		]);
 
@@ -324,14 +341,17 @@
 		curl_close($ch);
 
 		return $website_content;
-	}	
-	
-	function crawlerPage($url,$useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36',$timeout = 12000){
+	}
+
+	function crawlerPage($url,$useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36',$timeout = 12000,$scrapestack = true){
 		// $useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36';
 		// $timeout = 12000;
-		$response = scrapestack($url);
-		if(strlen($response)>50){
-			return $response;
+		if($scrapestack==true){
+			$response = $response = scrapestack($url);
+			$json = json_decode($response,true);
+			if(!is_array($json)){
+				return ['content'=>$response,'status'=>200];
+			}
 		}
 		$dir = dirname(__FILE__);
 		$cookie_file = $dir . '/cookies/' . md5($_SERVER['REMOTE_ADDR']) . '.txt';
@@ -363,8 +383,8 @@
         return ['content'=>$response,'header_size'=>$header_size,'header'=>$header,'body'=>$body,'content_type'=>$content_type,'info'=>$info,'status'=>$status];
 	}
 	function sitemap($urls,$explode,$after,$before){
-		$retorno = '';		
-		foreach($urls as &$url){$retorno .= Craw::crawlerPage($url);}		
+		$retorno = '';
+		foreach($urls as &$url){$retorno .= Craw::crawlerPage($url);}
 		$array = explode($explode,$retorno);
 		$retorno = array();
 		foreach($array as &$value){array_push($retorno,Craw::pesquisar($value, $after, $before));}
@@ -373,22 +393,22 @@
 	function pesquisarAfter($string, $after,$striptags=true){
 		$subresult = '';
 		if(strpos($string,$after) !== false) {
-			$subresult = substr($string,strpos($string,$after)+strlen($after));		
+			$subresult = substr($string,strpos($string,$after)+strlen($after));
 		}
 		$subresult = str_replace('&nbsp;','',$subresult);
 		return $striptags===true ? strip_tags($subresult) : $subresult;
 	}
-	
+
 	function pesquisar($string, $after, $before,$striptags=true){
 		$subresult = '';
 		if(strpos($string,$after) !== false) {
 			$subresult = substr($string,strpos($string,$after)+strlen($after));
-			$subresult = strchr($subresult,$before,true);		
+			$subresult = strchr($subresult,$before,true);
 		}
 		$subresult = str_replace('&nbsp;','',$subresult);
 		return $striptags===true ? strip_tags(trim($subresult)) : trim($subresult);
 	}
-	
+
 	function pesquisarImagens($imagens,$after,$before){
 		$arrayRetorno = array();
 		$array = explode("<img",$imagens);
@@ -520,7 +540,7 @@
 		);
 		return ['op'=>$manager->executeBulkWrite($database, $bulk)];
 	}
-	
+
     function ObjectId($id){
 		return new MongoDB\BSON\ObjectId($id);
 	}
@@ -547,8 +567,17 @@
 	}
 	function stringify_sql($string){
 		$str = str_replace(['[',']'], '', $string);
-		if(strlen($str)>0)	return "'".$string."'";
+		if(is_null($string)) return 'null';
+		elseif(strlen($str)>0)	return "'".$string."'";
 		else return "'".null."'";
+	}
+
+	function stable2(){
+		if(intval($string)==0){
+			return null;
+		}else{
+			return $string;
+		}
 	}
 
 	function stable($va1,$val2,$percent){

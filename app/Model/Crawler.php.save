@@ -1,7 +1,7 @@
 <?php
 
 class CrawlerModel extends Model{
-
+	
 	function __construct(){
 		$this->model = new Model();
 	}
@@ -12,7 +12,7 @@ class CrawlerModel extends Model{
 	}
 
 	public function valid_date_alexa($url_id){
-		return $this->model->query("select max(date) as date from alexa where (url_id) = (".$url_id.") and date = '".date('Y-m-d')."';")[0]['date'];
+		return $this->model->query("select max(date) as date from alexa_test where (url_id) = (".$url_id.") and date = '".date('Y-m-d')."';")[0]['date'];
 	}
 
 	public function pagespeed(){
@@ -29,20 +29,23 @@ class CrawlerModel extends Model{
 	}
 
 	public function valid_date_lighthouse($url_id){
-		return $this->model->query("select max(datetime) as date from lighthouse_temp where (url_id) = (".$url_id.") and datetime = '".date('Y-m-d H:00:00')."';")[0]['date'];
+		return $this->model->query("select max(datetime) as date from lighthouse where (url_id) = (".$url_id.") and datetime = '".date('Y-m-d H:00:00')."';")[0]['date'];
 	}
 
+	public function valid_date_lighthouse_audit($url_id,$audit_type,$audit){
+                return $this->model->query("select max(datetime) as date from lighthouse where (url_id) = (".$url_id.") and audit_type = '$audit_type' and audit = '$audit' and datetime = '".date('Y-m-d H:00:00')."';")[0]['date'];
+        }
+
 	public function valid_date_performance($url_id){
-		echo "select max(datetime) as date from performance where (url_id) = (".$url_id.") and datetime = '".date('Y-m-d H:00:00')."';";
-    return $this->model->query("select max(datetime) as date from performance where (url_id) = (".$url_id.") and datetime = '".date('Y-m-d H:00:00')."';")[0]['date'];
-  }
+                return $this->model->query("select max(datetime) as date from performance where (url_id) = (".$url_id.") and datetime = '".date('Y-m-d H:00:00')."';")[0]['date'];
+        }
 
 	public function robots(){
 		return $this->model->query('select * from monitoring_links mon where mon.robots = 1 and mon.active = 1 order by id;');
 	}
 
 	public function valid_date_robots($url_id){
-		return $this->model->query("select max(datetime) from robots where url_id = ".$url_id." and datetime = '".date('Y-m-d H:00:00')."';");
+		return $this->model->query("select max(datetime) from robots_test where url_id = ".$url_id." and datetime = '".date('Y-m-d H:00:00')."';");
 	}
 
 	public function robots_old($url_id){
@@ -62,7 +65,7 @@ class CrawlerModel extends Model{
 	}
 
 	public function valid_date_observatory($url_id){
-		return $this->model->query("select max(datetime) as date from observatory where url_id = ".$url_id." and datetime = '".date('Y-m-d H:00:00')."';")[0]['date'];
+		return $this->model->query("select max(datetime) as date from observatory_test where url_id = ".$url_id." and datetime = '".date('Y-m-d H:00:00')."';")[0]['date'];
 	}
 
 	public function observatory($limit){

@@ -6,7 +6,7 @@ function new_scan($url){
 	curl_setopt($ch, CURLOPT_URL, 'https://http-observatory.security.mozilla.org/api/v1/analyze?host='.$url);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 	curl_setopt($ch, CURLOPT_POST, 1);
-	curl_setopt($ch, CURLOPT_POSTFIELDS, "hidden=false&rescan=false");
+	curl_setopt($ch, CURLOPT_POSTFIELDS, "hidden=false&rescan=true");
 	curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
 
 	$headers = array();

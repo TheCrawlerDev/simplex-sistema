@@ -1,6 +1,6 @@
 <?php
 
-// error_reporting(0);
+error_reporting(0);
 
 header('Content-Type: application/json');
 
@@ -8,16 +8,22 @@ include('craw.php');
 
 $craw = new Craw();
 
-$_GET['page'] = $craw->formatarURL(['http://','https://'],$_GET['page']);
+//$_GET['page'] = $craw->formatarURL(['http://','https://'],$_GET['page']);
 
 // $_GET['page'] = $craw->url_path($_GET['page']);
 
 $ch = curl_init();
 
+$arr_params = array('url'=>$_GET['page'],'replace'=>true,'save'=>false);
+
+$page = $_GET['page'];
+
 curl_setopt($ch, CURLOPT_URL, 'https://lighthouse-dot-webdotdevsite.appspot.com//lh/newaudit');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 curl_setopt($ch, CURLOPT_POST, 1);
-curl_setopt($ch, CURLOPT_POSTFIELDS, "{\"url\":\"https://www.fideliscourtiers.fr/lexique-fideliscourtiers/\",\"replace\":true,\"save\":false}");
+//curl_setopt($ch, CURLOPT_POSTFIELDS, "{\"url\":\"$page\",\"replace\":true,\"save\":false}");
+//curl_setopt($ch, CURLOPT_POSTFIELDS, "{\"url\":\"\".$_GET['page']."\",\"replace\":true,\"save\":false}");
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($arr_params));
 curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
 
 $headers = array();
