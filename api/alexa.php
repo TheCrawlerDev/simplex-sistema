@@ -10,17 +10,15 @@ $craw = new Craw();
 
 // $_GET['page'] = $craw->formatarURL(['http://','https://'],$_GET['page']);
 
-// var_dump(parse_url($_GET['page']));
+// $_GET['page'] = $craw->url_path($_GET['page']);
 
-$_GET['page'] = $craw->url_path($_GET['page']);
+$_GET['page'] = parse_url($_GET['page'])['host'];
+
+$_GET['page'] = str_replace('www.','',$_GET['page']);
 
 $data = $craw->crawlerPage('https://www.alexa.com/siteinfo/'.$_GET['page']);
 
-// echo 'https://www.alexa.com/siteinfo/'.$_GET['page'];
-
-// var_dump($_GET);
-
-// echo $data;
+// var_dump($data);
 
 try{
 	$json['topKeywordsJSON'] = json_decode($craw->pesquisar($data, '<script type="application/json" id="topKeywordsJSON">', '</script>'),true);

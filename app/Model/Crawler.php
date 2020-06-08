@@ -33,16 +33,15 @@ class CrawlerModel extends Model{
 	}
 
 	public function valid_date_performance($url_id){
-		echo "select max(datetime) as date from performance where (url_id) = (".$url_id.") and datetime = '".date('Y-m-d H:00:00')."';";
-    return $this->model->query("select max(datetime) as date from performance where (url_id) = (".$url_id.") and datetime = '".date('Y-m-d H:00:00')."';")[0]['date'];
-  }
+                return $this->model->query("select max(datetime) as date from performance where (url_id) = (".$url_id.") and datetime = '".date('Y-m-d H:00:00')."';")[0]['date'];
+        }
 
 	public function robots(){
 		return $this->model->query('select * from monitoring_links mon where mon.robots = 1 and mon.active = 1 order by id;');
 	}
 
 	public function valid_date_robots($url_id){
-		return $this->model->query("select max(datetime) from robots where url_id = ".$url_id." and datetime = '".date('Y-m-d H:00:00')."';");
+		return $this->model->query("select max(datetime) from robots_test where url_id = ".$url_id." and datetime = '".date('Y-m-d H:00:00')."';");
 	}
 
 	public function robots_old($url_id){
@@ -50,7 +49,7 @@ class CrawlerModel extends Model{
 	}
 
 	public function seo_crawler(){
-		return $this->model->query('select * from monitoring_links mon where mon.robots = 1 and mon.active = 1 order by rand();');
+		return $this->model->query('select * from monitoring_links mon where mon.SEO_crawl = 1 and mon.active = 1 order by rand();');
 	}
 
 	public function valid_date_seo_crawler($url_id){
@@ -62,7 +61,7 @@ class CrawlerModel extends Model{
 	}
 
 	public function valid_date_observatory($url_id){
-		return $this->model->query("select max(datetime) as date from observatory where url_id = ".$url_id." and datetime = '".date('Y-m-d H:00:00')."';")[0]['date'];
+		return $this->model->query("select max(datetime) as date from observatory_test where url_id = ".$url_id." and datetime = '".date('Y-m-d H:00:00')."';")[0]['date'];
 	}
 
 	public function observatory($limit){

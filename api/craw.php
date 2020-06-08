@@ -5,9 +5,10 @@ class Craw{
 
 	public function scrapestack($url){
 		$queryString = http_build_query([
-			// 'access_key'=>'674d6e8ad1d05458b4dfe17fc5c6d3ab',
-			'access_key' => 'd3b1a84694cd9bcec0760ae769316abf',
-		  'url' => $url,
+		// 'access_key' => 'd3b1a84694cd9bcec0760ae769316abf',
+		'access_key'=>'de313918d57c4ba42563039281fbf772',
+		// 'access_key'=>'674d6e8ad1d05458b4dfe17fc5c6d3ab',
+		 'url' => $url,
 		  // 'render_js' => 0,
 		]);
 
@@ -97,24 +98,13 @@ class Craw{
 		return curl_exec($ch);
 	}
 
-	public function is_json($html){
-		try{
-			$json = json_encode($html);
-			return is_array($json);
-		}catch(Exception $e){
-			return false;
-		}
-	}
-
 	public static function crawlerPage($url,$useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36',$timeout = 12000){
 		// $useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36';
 		// $timeout = 12000;
 		$response = self::scrapestack($url);
-
 		if(strlen($response)>50){
 			return $response;
 		}
-
 		$dir = dirname(__FILE__);
 		$cookie_file = $dir . '/cookies/' . md5($_SERVER['REMOTE_ADDR']) . '.txt';
 		$ch = curl_init($url);

@@ -14,6 +14,9 @@
 				try{
 					$url = str_replace('//robots.txt', '/robots.txt', ($link['url'].'/robots.txt'));
 					$response = crawlerPage($url,'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36',12000,false);
+					// if(intval($response['status'])<>200){
+					// 	$response = json_decode(file_get_contents('http://142.93.189.150/cerebro/api/chrome.php?url='.$url),true);
+					// }
 					$robots = $response['content'];
 					$robots_old = $model->robots_old($link['id'])[0]['rules'];
 					$dados['datetime'] = stringify_sql(date('Y-m-d H:00:00'));
@@ -24,7 +27,7 @@
 					$dados['difference'] = ( $robots <> $robots_old ? 'True' : 'False' );
 					$dados['unique_key'] = stringify_sql(date('YmdH').$link['id']);
 					print_r($dados);
-					$result = $model_generic->insert('robots',$dados);
+					$result = $model_generic->insert('robots_test',$dados);
 					echo ($result == false ? "Link $url não atualizado!</br>" : "Link $url atualizado!</br>");
 				}catch(Exception $e){
 					print_r($e);

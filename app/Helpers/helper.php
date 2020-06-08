@@ -327,13 +327,13 @@
 
 	function scrapestack($url){
 		$queryString = http_build_query([
-		//'access_key' => 'd3b1a84694cd9bcec0760ae769316abf',
-		//'access_key'=>'de313918d57c4ba42563039281fbf772',
-		'access_key'=>'674d6e8ad1d05458b4dfe17fc5c6d3ab',
+		'access_key' => 'd3b1a84694cd9bcec0760ae769316abf',
+		// 'access_key'=>'de313918d57c4ba42563039281fbf772',
+		// 'access_key'=>'674d6e8ad1d05458b4dfe17fc5c6d3ab',
 		 'url' => $url,
 		  // 'render_js' => 0,
 		]);
-
+		print_r($queryString);
 		$ch = curl_init(sprintf('%s?%s', 'http://api.scrapestack.com/scrape', $queryString));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
@@ -347,7 +347,7 @@
 		// $useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36';
 		// $timeout = 12000;
 		if($scrapestack==true){
-			$response = $response = scrapestack($url);
+			$response = scrapestack($url);
 			$json = json_decode($response,true);
 			if(!is_array($json)){
 				return ['content'=>$response,'status'=>200];

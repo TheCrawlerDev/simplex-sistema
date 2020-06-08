@@ -10,7 +10,15 @@
 		$datetime = stringify_sql(date('Y-m-d H:00:00'));
 		$date_unique = date('YmdH');
 		$links = $model->lighthouse();
-		//$links = array_reverse($links);
+		if($_GET['order']==1){
+			$links = array_reverse($links);
+		}elseif($_GET['order']==2){
+			$links = array_semireverse($links);
+		}elseif($_GET['order']==3){
+			$links = $links;
+		}else{
+			//do nothing
+		}
 		foreach($links as $link){
 			$valid_date = $model->valid_date_lighthouse($link['id']);
 			if(is_null($valid_date)){
@@ -153,7 +161,9 @@
 							$performance['`'.$perf_audit.'`'] = 'null';
 					}
 				}
-
+					$performance['first_input_delay_ms'] = $api['crux']['loadingExperience']['metrics']['FIRST_INPUT_DELAY_MS']['percentile'];
+					$performance['cumulative_layout_shift_score'] = $api['crux']['loadingExperience']['metrics']['CUMULATIVE_LAYOUT_SHIFT_SCORE']['percentile'];
+					$performance['largest_contentful_paint_ms'] = $api['crux']['loadingExperience']['metrics']['LARGEST_CONTENTFUL_PAINT_MS']['percentile'];
 					$performance['unique_key'] = stringify_sql($date_unique.$link['id']);
 					print_r($performance);
 					$valid_date_performance = $model->valid_date_performance($link['id']);

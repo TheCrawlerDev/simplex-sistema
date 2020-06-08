@@ -47,6 +47,16 @@ if (curl_errno($ch)) {
 }
 curl_close($ch);
 
+$result = json_decode($result,true);
+
+// adicionando as chaves e ajustando
+$result['lhr']['audits']['time-to-first-byte'] = $result['lhr']['audits']['server-response-time'];
+$result['lhr']['audits']['heading-levels'] = $result['lhr']['audits']['heading-order'];
+$result['lhr']['audits']['duplicate-id'] = $result['lhr']['audits']['duplicate-id-aria'];
+// adicionando as chaves e ajustando
+
+$result = json_encode($result);
+
 echo $result;
 
 ?>

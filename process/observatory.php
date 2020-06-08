@@ -38,7 +38,7 @@
 						$dados['details'] = stringify_sql(addslashes(json_encode($api['r5'])));
 						$dados['unique_key'] = stringify_sql(date('YmdH').$link['id']);
 						//print_r($dados);
-						$result = $model_generic->insert('observatory',$dados);
+						$result = $model_generic->insert('observatory_test',$dados);
 						echo ($result == false ? "Link $url não atualizado!</br>" : "Link $url atualizado!</br>");
 				}catch(Exception $e){
 					print_r($e);
@@ -51,3 +51,4 @@
 
 
 ?>
+

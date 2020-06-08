@@ -8,19 +8,19 @@
 		$model_generic = new Model();
 		$model = new CrawlerModel();
 		$links = $model->alexa();
-		// $links = array($links[0]);
-		// print_r($links);exit();
+		//print_r($links);exit();
+		//$links = array($links[0]);
 		foreach($links as $link){
 			$valid_date = $model->valid_date_alexa($link['id']);
 			var_dump($valid_date);
 			if(is_null($valid_date)){
-				$api = json_decode(file_get_contents('http://167.172.246.220/cerebro/api/alexa.php?page='.$link['url']),true);
+				$api = json_decode(file_get_contents('http://142.93.189.150/cerebro/api/alexa.php?page='.$link['url']),true);
 				$i = 0;
 				while( count($api['rankData'])==0 || intval($api['time_on_site'])==0 ) {
 					sleep(4);
 					$i++;
 					if($i>30) break;
-					$api = json_decode(file_get_contents('http://167.172.246.220/cerebro/api/alexa.php?page='.$link['url']),true);
+					$api = json_decode(file_get_contents('http://142.93.189.150/cerebro/api/alexa.php?page='.$link['url']),true);
 				}
 				try{
 					$dados['date'] = stringify_sql(date('Y-m-d H:00:00'));
@@ -48,3 +48,4 @@
 
 
 ?>
+
