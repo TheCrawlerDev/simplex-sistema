@@ -19,39 +19,51 @@ if($_GET['order']==1){
 }else{
   //do nothing
 }
+// $links = array($links[0]);
+// print_r($links);
 foreach($links as $link){
   $valid_date = $model->valid_date_seo_crawler($link['id']);
   if($valid_date<1){
       $traffic_types = ['Desktop Javascript Rendered'];
-      // $campos = ['headers','content','prev','next','canonical','amp','ntitle','title','nh1','nh2','nh3','nh4','nh5','nh6','description','keywords',
-      // 'robots','nlinks','nimgs','nimgsalt','njavascript','ncss'];
-      $campos = ['headers','content','prev','next','canonical','amp','title','description','keywords','robots'];
-      $campos_int = ['nh1','nh2','nh3','nh4','nh5','nh6','nlinks','nimgs','nimgsalt','njavascript','ncss'];
-      $campos_json = ['h1','h2','h3','h4','h5','h6'];
       foreach($traffic_types as $traffic_type){
         $url = $link['url'];
-        // $api = json_decode(file_get_contents('http://142.93.189.150/cerebro/api/seo_crawler.php?page='.$link['url']),true);
-        $api = json_decode(file_get_contents('http://165.227.188.205/cerebro/api/seo_crawler.php?page='.$link['url']),true);
-        foreach($campos as $campo){
-          $dados[$campo] = stringify_sql(addslashes($api[$campo]));
-        }
-        foreach($campos_json as $campo){
-          $dados[$campo] = stringify_sql(json_encode($api[$campo]));
-        }
-        foreach($campos_int as $campo){
-          $dados[$campo] = intval($api[$campo]);
-        }
-        $seo_old = $model->seo_old($link['id'])[0]['rules'];
-        $dados['status'] = intval($api['status']);
+        $api = json_decode(file_get_contents('http://165.227.188.205/cerebro/api/seo_craw_api.php?api=seo&page='.$url),true);
+        $seo_old = $model->seo_old($link['id'])[0];
+        $dados = $api;
         $dados['datetime'] = $datetime;
         $dados['url_id'] = $link['id'];
         $dados['url'] = stringify_sql($link['url']);
         $dados['type'] = stringify_sql($traffic_type);
-        $changes = array_diff($dados,$seo_old);
-        $dados['changes'] = stringify_sql(json_encode(array_keys($changes)),255);
-        $dados['nchanges'] = count($changes);
         $dados['unique_key'] = stringify_sql($date_unique.$link['id']);
+        // if($dados['nchanges']>1){
+        //   file_put_contents('changes/'.$link['id'].'.txt',json_encode($dados));
+        // }
+        var_dump($dados);
+        echo "</br></br>";
+        var_dump($api);
+        echo "</br></br>";
         $result = $model_generic->insert('seo_monitoring_test',$dados);
+        echo '</br></br>';
+        // if($result !== false){
+        //   unset($dados['unique_key']);
+        //   $dados['nchanges'] = 0;
+        //   unset($dados['changes']);
+        //   // $result = $model_generic->insert('seo_monitoring',$dados);
+        //   echo '</br></br>';
+        // }elseif($result == false) {
+        //   $seo_old['unique_key'] = stringify_sql($date_unique.$link['id']);
+        //   unset($seo_old['changes']);
+        //   unset($seo_old['nchanges']);
+        //   $result = $model_generic->insert('seo_monitoring_test',$seo_old);
+        //   echo '</br></br>';
+        //   if($result !== false){
+        //     unset($dados['unique_key']);
+        //     $dados['nchanges'] = 0;
+        //     unset($dados['changes']);
+        //     // $result = $model_generic->insert('seo_monitoring',$dados);
+        //     echo '</br></br>';
+        //   }
+        // }
         echo ($result == false ? "Link $url não atualizado!</br>" : "Link $url atualizado!</br>");
       }
   }
