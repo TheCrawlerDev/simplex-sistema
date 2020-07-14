@@ -10,15 +10,9 @@ $craw = new Craw();
 
 // $_GET['page'] = $craw->formatarURL(['http://','https://'],$_GET['page']);
 
-// $_GET['page'] = $craw->url_path($_GET['page']);
-
-$_GET['page'] = parse_url($_GET['page'])['host'];
-
-$_GET['page'] = str_replace('www.','',$_GET['page']);
+$_GET['page'] = $craw->url_path($_GET['page']);
 
 $data = $craw->crawlerPage('https://www.alexa.com/siteinfo/'.$_GET['page']);
-
-// var_dump($data);
 
 try{
 	$json['topKeywordsJSON'] = json_decode($craw->pesquisar($data, '<script type="application/json" id="topKeywordsJSON">', '</script>'),true);
@@ -67,7 +61,7 @@ try{
 	}else{
 		$json['page_views'] = doubleval($craw->pesquisar($page_views_html, '<p class="small data">', '</span>'));
 	}
-
+	
 	//$json['page_views'] = doubleval($craw->pesquisar($page_views_html, '<p class="small data">', '</span>'));
 
 	$time_on_site = $craw->pesquisar($data, '<div class="rankmini-daily" style="flex-basis:40%;">', '</div>');
@@ -91,7 +85,7 @@ try{
 	$search_visits_html = $craw->pesquisar($data, '<p>Percentage of visits to the site that consist of a single pageview.</p>', '</section>',false);
 
 	$search_visits = $craw->pesquisar($search_visits_html, '<span class="num purple">', '%</span>');
-
+	
 	if(strlen($search_visits)<1 || intval($search_visits)==0 ){
                 $json['search_visits'] = null;
         }else{

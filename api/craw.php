@@ -2,16 +2,15 @@
 class Craw{
 
 	private $returnPage;
-
+	
 	public function scrapestack($url){
 		$queryString = http_build_query([
-		// 'access_key' => 'd3b1a84694cd9bcec0760ae769316abf',
-		'access_key'=>'de313918d57c4ba42563039281fbf772',
-		// 'access_key'=>'674d6e8ad1d05458b4dfe17fc5c6d3ab',
-		 'url' => $url,
+		'access_key'=>'674d6e8ad1d05458b4dfe17fc5c6d3ab',		  
+		//'access_key' => 'd3b1a84694cd9bcec0760ae769316abf',
+		  'url' => $url,
 		  // 'render_js' => 0,
 		]);
-
+		
 		$ch = curl_init(sprintf('%s?%s', 'http://api.scrapestack.com/scrape', $queryString));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
@@ -96,8 +95,8 @@ class Craw{
 		print_r(curl_getinfo($ch));
 		echo "</br></br>";
 		return curl_exec($ch);
-	}
-
+	}	
+	
 	public static function crawlerPage($url,$useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36',$timeout = 12000){
 		// $useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36';
 		// $timeout = 12000;
@@ -126,8 +125,8 @@ class Craw{
 		return curl_exec($ch);
 	}
 	public static function sitemap($urls,$explode,$after,$before){
-		$retorno = '';
-		foreach($urls as &$url){$retorno .= Craw::crawlerPage($url);}
+		$retorno = '';		
+		foreach($urls as &$url){$retorno .= Craw::crawlerPage($url);}		
 		$array = explode($explode,$retorno);
 		$retorno = array();
 		foreach($array as &$value){array_push($retorno,Craw::pesquisar($value, $after, $before));}
@@ -136,22 +135,22 @@ class Craw{
 	public static function pesquisarAfter($string, $after,$striptags=true){
 		$subresult = '';
 		if(strpos($string,$after) !== false) {
-			$subresult = substr($string,strpos($string,$after)+strlen($after));
+			$subresult = substr($string,strpos($string,$after)+strlen($after));		
 		}
 		$subresult = str_replace('&nbsp;','',$subresult);
 		return $striptags===true ? strip_tags($subresult) : $subresult;
 	}
-
+	
 	public static function pesquisar($string, $after, $before,$striptags=true){
 		$subresult = '';
 		if(strpos($string,$after) !== false) {
 			$subresult = substr($string,strpos($string,$after)+strlen($after));
-			$subresult = strchr($subresult,$before,true);
+			$subresult = strchr($subresult,$before,true);		
 		}
 		$subresult = str_replace('&nbsp;','',$subresult);
 		return $striptags===true ? strip_tags(trim($subresult)) : trim($subresult);
 	}
-
+	
 	public static function pesquisarImagens($imagens,$after,$before){
 		$arrayRetorno = array();
 		$array = explode("<img",$imagens);

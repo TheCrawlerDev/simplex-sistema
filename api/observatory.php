@@ -6,7 +6,7 @@ function new_scan($url){
 	curl_setopt($ch, CURLOPT_URL, 'https://http-observatory.security.mozilla.org/api/v1/analyze?host='.$url);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 	curl_setopt($ch, CURLOPT_POST, 1);
-	curl_setopt($ch, CURLOPT_POSTFIELDS, "hidden=false&rescan=true");
+	curl_setopt($ch, CURLOPT_POSTFIELDS, "hidden=false&rescan=false");
 	curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
 
 	$headers = array();
@@ -67,9 +67,9 @@ $data['r1'] = $craw->carregar('https://http-observatory.security.mozilla.org/api
 $i = 0;
 
 while($data['r1']['state']<>'FINISHED'){
-	
+
 	sleep(5);
-	
+
 	$data['r1'] = $craw->carregar('https://http-observatory.security.mozilla.org/api/v1/analyze?host='.$_GET['page']);
 	$i++;
 
